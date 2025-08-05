@@ -1,6 +1,5 @@
 @import "tailwindcss";
 
-
 /* Additional styles for editor */
 .ProseMirror:focus {
   outline: none;
@@ -129,4 +128,151 @@ button {
   button:active {
     background-color: #0f0f0f69;
   }
+}
+
+.diagnostics {
+  flex: 1 1 auto;
+  min-height: 0;
+  z-index: 1;
+  overscroll-behavior: none; /* Completely prevents bouncing */
+  scroll-behavior: smooth; /* Optional: makes programmatic scrolling smooth */
+}
+
+.diagnostics-scroll-area {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  border-radius: 0.25rem;
+  overflow-y: hidden;
+  @apply bg-transparent;
+  overscroll-behavior: none; /* Completely prevents bouncing */
+  
+  :focus {
+    outline: none;
+  }
+  transition: flex-basis 0.2s ease;
+  min-height: 1rem;
+}
+
+select#prefs-model-name option {
+  font-family: '3270', monospace; /* Change font */
+  font-size: 12px; /* Change font size */
+  color: #333; /* Change text color */
+  background-color: #f9f9f9; /* Change background color */
+}
+
+.diagnostics-btn-area {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  @apply gap-3;
+  align-items: center;
+  padding: 0.5rem;
+  @apply relative;
+  @apply z-10;
+}
+
+.diagnostics-content {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+  position: relative;
+  overscroll-behavior: none; /* Completely prevents bouncing */
+  scroll-behavior: smooth; /* Optional: makes programmatic scrolling smooth */
+}
+
+
+.diagnostics-area-button {
+  font-family: '3270-Mono', '3270', monospace;
+  @apply text-[0.9em];
+  @apply font-stretch-condensed;
+  @apply relative w-fit px-1 py-[0.5px] rounded-sm;
+  @apply border border-black;
+  @apply shadow-[3px_3px_0px_0px];
+  @apply rounded-[0.2em];
+}
+
+.diagnostics-area-button {
+  @apply text-black bg-gray-200;
+}
+
+.dark .diagnostics-area-button {
+  @apply text-white bg-gray-700;
+}
+
+.diagnostics-area-button:hover.button-in {
+  @apply shadow-[inset_1px_1px_0px_0px_#000000];
+  @apply translate-x-[0.25px] translate-y-[0.25px] scale-[0.99];
+  @apply before:content-[''] before:absolute before:left-0 before:top-0;
+  /* @apply before:w-full before:h-full before:border-[0.5px] before:border-black; */
+  @apply hover:before:border-[1px] hover:before:border-black cursor-pointer hover:bg-green-500;
+  
+  transition: transform 180ms ease-in-out, box-shadow 100ms ease-in-out, background-color 100ms ease-in-out, border-color 100ms ease-in-out;
+}
+
+.diagnostics-area-button.button-in {
+  @apply shadow-none;
+  @apply bg-green-400;
+  @apply dark:text-black dark:bg-gray-400;
+  /*@apply translate-x-[3px] translate-y-[3px];*/
+  /* transition: transform 180ms ease-in-out, box-shadow 100ms ease-in-out, background-color 100ms ease-in-out, border-color 100ms ease-in-out; Add this line */
+}
+
+.diagnostics-area-button.button-in.button-overline {
+  @apply bg-green-500;
+  text-decoration: overline;
+}
+
+
+.diagnostics-area-button.button-inactive {
+  @apply shadow-[inset_1px_1px_0px_0px_#000000];
+  @apply translate-x-[0.25px] translate-y-[0.25px] scale-[0.99];
+  @apply before:content-[''] before:absolute before:left-0 before:top-0;
+  @apply bg-amber-500;
+  /* @apply before:w-full before:h-full before:border-[0.5px] before:border-black; */
+  @apply hover:before:border-[1px] hover:before:border-black cursor-pointer hover:bg-amber-600;
+  @apply hover:shadow-[inset_2px_2px_0px_0px_#000000];
+  transition: transform 180ms ease-in-out, box-shadow 280ms ease-in-out, background-color 100ms ease-in-out, border-color 100ms ease-in-out;
+}
+
+
+
+.diagnostics-area-button.button-out {
+  /* @apply font-['ESKlarheitKurrentMono']; */
+  /* @apply relative w-fit px-[0.5em] py-[0.5px] rounded-sm; */
+  @apply border border-black;
+  @apply shadow-[1px_1px_0px_0px] shadow-black;
+  /* @apply bg-gray-100; */
+  /* @apply text-gray-800; */
+  
+}
+
+
+.diagnostics-area-button.disabled {
+  /* @apply font-['ESKlarheitKurrentMono']; */
+  @apply relative w-fit px-1 py-[0.5px] rounded-sm;
+  @apply border border-black;
+  @apply shadow-[0px_0px_0px_0px];
+  @apply bg-gray-400;
+  /* @apply line-through; */
+}
+
+.diagnostics-area-button:hover.enabled {
+  @apply shadow-[inset_1px_1px_0px_0px_#000000];
+  @apply translate-x-[0.25px] translate-y-[0.25px] scale-[0.99];
+  @apply before:content-[''] before:absolute before:left-0 before:top-0;
+  /* @apply before:w-full before:h-full before:border-[0.5px] before:border-black; */
+  @apply hover:before:border-[1px] hover:before:border-black cursor-pointer hover:bg-green-500;
+  
+  transition: transform 180ms ease-in-out, box-shadow 100ms ease-in-out, background-color 100ms ease-in-out, border-color 100ms ease-in-out;
+}
+
+.diagnostics-area-button:hover.disabled {
+  @apply before:content-[''] before:absolute before:left-0 before:top-0;
+  @apply before:w-full before:h-full before:border-[0.5px] before:border-transparent;
+  @apply hover:before:border-l-0 hover:before:border-t-0 hover:before:border-black cursor-pointer hover:bg-red-500;
+  transition: transform 180ms ease-in-out, box-shadow 100ms ease-in-out, background-color 50ms ease-in-out, border-color 100ms ease-in-out;
 }

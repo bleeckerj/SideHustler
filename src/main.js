@@ -364,6 +364,80 @@ window.setStatusBarMessage = function(msg) {
   statusBar.textContent = msg;
 };
 
+// Create action buttons area
+const actionButtonsArea = document.createElement('div');
+actionButtonsArea.id = 'action-buttons-area';
+actionButtonsArea.style.width = '100%';
+actionButtonsArea.style.background = '#f5f5f5';
+actionButtonsArea.style.borderTop = '1px solid #e0e0e0';
+actionButtonsArea.style.borderBottom = '1px solid #e0e0e0';
+actionButtonsArea.style.padding = '4px 0 2px 0';
+actionButtonsArea.style.display = 'flex';
+actionButtonsArea.style.flexDirection = 'column';
+actionButtonsArea.style.gap = '2px';
+
+function createButtonRow(buttons) {
+  const row = document.createElement('div');
+  row.style.display = 'flex';
+  row.style.gap = '6px';
+  row.style.fontSize = '0.8em';
+  row.style.paddingLeft = '12px';
+  row.style.marginBottom = '2px';
+  buttons.forEach(btn => {
+    const span = document.createElement('span');
+    span.textContent = btn.label;
+    span.id = btn.id;
+    span.className = 'diagnostics-area-button ' + (btn.enabled ? 'enabled' : 'disabled');
+    // span.style.padding = '2px 8px';
+    // span.style.borderRadius = '3px';
+    // span.style.background = btn.enabled ? '#e0e0e0' : '#f5f5f5';
+    // span.style.color = btn.enabled ? '#222' : '#aaa';
+    // span.style.border = '1px solid #d0d0d0';
+    // span.style.cursor = btn.enabled ? 'pointer' : 'not-allowed';
+    // span.style.userSelect = 'none';
+    // span.style.fontWeight = 'bold';
+    // span.style.fontSize = '0.8em';
+    span.addEventListener('click', () => {
+      if (btn.enabled) window.setStatusBarMessage(`Action: ${btn.label}`);
+    });
+    row.appendChild(span);
+  });
+  return row;
+}
+
+const row1Buttons = [
+  {id:'incant-btn',label:'INCNT',enabled:true},
+  {id:'vibe-mode-btn',label:'VIBEM',enabled:true},
+  {id:'streaming-mode-btn',label:'STRMC',enabled:true},
+  {id:'nudge-inline-action-item',label:'NUDGE',enabled:true},
+  {id:'simplify-btn',label:'SMLFY',enabled:false},
+  {id:'panel-toggle-btn',label:'PREFS',enabled:true},
+  {id:'arm-a-btn',label:'ARM-A',enabled:false},
+  {id:'arm-b-btn',label:'ARM-B',enabled:false},
+  {id:'cmpse-btn',label:'CMPSE',enabled:false},
+  {id:'excvt-btn',label:'EXCVT',enabled:false}
+];
+const row2Buttons = [
+  {id:'list-canon-btn',label:'CANON',enabled:true},
+  {id:'ingest-btn',label:'INGST',enabled:true},
+  {id:'ingest-url-btn',label:'NGSTU',enabled:true},
+  {id:'similarity-search-btn',label:'SSRCH',enabled:true},
+  {id:'streaming-no-rag-mode-btn',label:'SPEAK',enabled:false},
+  {id:'clear-diagnostics-btn',label:'CLEAR',enabled:true},
+  {id:'reset-rag-btn',label:'RESET',enabled:true},
+  {id:'open-log-btn',label:'LOGJS',enabled:true},
+  {id:'genrt-btn',label:'GENRT',enabled:false},
+  {id:'mstrm-btn',label:'MSTRM',enabled:false}
+];
+
+const row1 = createButtonRow(row1Buttons);
+const row2 = createButtonRow(row2Buttons);
+actionButtonsArea.appendChild(row1);
+actionButtonsArea.appendChild(row2);
+
+// Insert action buttons area before the consoleContainer
+app.insertBefore(actionButtonsArea, consoleContainer);
+
 try {
     unlistenConsoleMessage = await listen('console-message', (event) => {
         console.log(`Received console message: ${JSON.stringify(event)}`);
