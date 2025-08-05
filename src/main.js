@@ -15,14 +15,15 @@ const UI_CONFIG = {
   handleBackgroundColor: '#e0e0e0',
   handleHoverColor: '#b0b0b0',
   handleIndicatorColor: '#9e9e9e',
-  collapsedHandleColor: '#e0e0e0',
+  collapsedHandleColor: '#f0f0f0',
+  collapsedHandleGrabberColor: '#a0a0af',
   collapsedHandleHoverColor: '#e0e0e0',
   
   // Console dimensions and behavior
   consoleDefaultHeight: '150px',
   consoleMinHeight: '80px',
-  consoleCollapsedHeight: '8px',
-  snapThreshold: 40,
+  consoleCollapsedHeight: '0px',
+  snapThreshold: 30,
   
   // Editor dimensions
   editorMinWidth: 300,
@@ -98,6 +99,8 @@ style.textContent = `
   
   .horizontal-resize-handle.console-collapsed {
     background-color: ${UI_CONFIG.collapsedHandleColor};
+    z-index: 999; /* Ensure it appears above the handle */
+
   }
   
   .horizontal-resize-handle.console-collapsed:hover {
@@ -106,9 +109,9 @@ style.textContent = `
   
   .horizontal-resize-handle.console-collapsed::after {
     content: "";
-    width: 20px;
-    height: 4px;
-    background-color: white;
+    width: 30px;
+    height: 6px;
+    background-color: ${UI_CONFIG.collapsedHandleGrabberColor};
     border-radius: 2px;
     position: absolute;
     left: 50%;
@@ -337,6 +340,29 @@ editorsContainer.appendChild(rightPane);
 app.appendChild(editorsContainer);
 app.appendChild(horizontalResizeHandle);
 app.appendChild(consoleContainer);
+
+// Create status bar
+const statusBar = document.createElement('div');
+statusBar.id = 'status-bar';
+statusBar.style.width = '100%';
+statusBar.style.height = '22px';
+statusBar.style.background = '#f5f5f5';
+statusBar.style.color = '#444';
+statusBar.style.fontSize = '8px';
+statusBar.style.display = 'flex';
+statusBar.style.alignItems = 'center';
+statusBar.style.paddingLeft = '12px';
+statusBar.style.borderTop = '1px solid #e0e0e0';
+statusBar.style.boxSizing = 'border-box';
+statusBar.textContent = 'Ready.';
+
+// Add status bar to the bottom of the app
+app.appendChild(statusBar);
+
+// Facility for sending text messages to the status bar
+window.setStatusBarMessage = function(msg) {
+  statusBar.textContent = msg;
+};
 
 try {
     unlistenConsoleMessage = await listen('console-message', (event) => {
