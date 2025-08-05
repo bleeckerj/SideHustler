@@ -6,15 +6,17 @@ document.body.style.height = '100vh';
 // Define UI configuration variables at the top of the file
 const UI_CONFIG = {
   // Resize handle dimensions
-  verticalHandleWidth: '4px',
-  horizontalHandleHeight: '4px',
+  verticalHandleWidth: '3px',
+  verticalHandleHoverWidth: '5px', // New variable for hover width
+  horizontalHandleHeight: '3px',
+  horizontalHandleHoverHeight: '5px', // New variable for hover height
   
   // Colors
   handleBackgroundColor: '#e0e0e0',
-  handleHoverColor: '#0f0f0f',
+  handleHoverColor: '#b0b0b0',
   handleIndicatorColor: '#9e9e9e',
-  collapsedHandleColor: '#000000',
-  collapsedHandleHoverColor: '#2980b9',
+  collapsedHandleColor: '#e0e0e0',
+  collapsedHandleHoverColor: '#e0e0e0',
   
   // Console dimensions and behavior
   consoleDefaultHeight: '150px',
@@ -43,26 +45,23 @@ style.textContent = `
     position: relative;
     z-index: 10;
   }
-  
   .vertical-resize-handle:hover,
   .vertical-resize-handle:active {
     background-color: ${UI_CONFIG.handleHoverColor};
-    width: calc(${UI_CONFIG.verticalHandleWidth} * 2.5); /* Make handle area wider on hover */
-    min-width: calc(${UI_CONFIG.verticalHandleWidth} * 2.5);
+    width: ${UI_CONFIG.verticalHandleHoverWidth};
+    min-width: ${UI_CONFIG.verticalHandleHoverWidth};
   }
-  
-  .vertical-resize-handle::after {
-    content: "";
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
+  .vertical-resize-line {
+    width: 4px !important;
     height: 20px;
-    width: 4px; /* Thin boundary line always visible */
     background-color: ${UI_CONFIG.handleIndicatorColor};
     border-radius: 2px;
     pointer-events: none;
     z-index: 11;
+    margin-left: auto;
+    margin-right: auto;
+    transition: none !important;
+    position: relative;
   }
   
   .horizontal-resize-handle {
@@ -81,7 +80,7 @@ style.textContent = `
   .horizontal-resize-handle:hover,
   .horizontal-resize-handle:active {
     background-color: ${UI_CONFIG.handleHoverColor};
-    height: calc(${UI_CONFIG.horizontalHandleHeight} * 2.5); /* Make handle area taller on hover */
+    height: ${UI_CONFIG.horizontalHandleHoverHeight}; /* Only handle area gets taller on hover */
   }
   
   .horizontal-resize-handle::after {
@@ -173,6 +172,12 @@ consoleContainer.dataset.snapped = 'false'; // Initialize snapped state
 function createResizeHandle(isVertical = true) {
   const handle = document.createElement('div');
   handle.className = isVertical ? 'vertical-resize-handle' : 'horizontal-resize-handle';
+  // Add inner line element for vertical handle
+  if (isVertical) {
+    const line = document.createElement('div');
+    line.className = 'vertical-resize-line';
+    handle.appendChild(line);
+  }
   return handle;
 }
 
