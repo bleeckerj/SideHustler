@@ -39,3 +39,7 @@ keyring = { version = "3", features = ["apple-native", "windows-native", "sync-s
 secrecy = "0.10.3"
 sodiumoxide = "0.2.7"
 ollama-rs = "0.2.6"
+async-trait = "0.1.88"
+url = "2.5.4"
+uuid = { version="1.17.0", features = ["v4"] }
+thiserror = "2.0.12"

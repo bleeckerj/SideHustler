@@ -23,7 +23,12 @@ use std::env;
 use dotenv::dotenv;
 mod logger;
 use logger::NewLogger;
-
+pub mod ai;
+use crate::ai::{
+    providers::{Provider, ProviderType, create_provider},
+    models::{ChatCompletionRequest, ChatMessage, MessageRole},
+    traits::{ChatCompletionProvider, ModelProvider},
+};
 pub fn emit_console_message(app_handle: &AppHandle, level: &str, message: &str) {
     let payload = serde_json::json!({ "level": level, "message": message });
     let _ = app_handle.emit("console-message", payload);
@@ -200,35 +205,63 @@ async fn greet(name: &str,
         }
     }
     
-    // Update your transform_text command to use the new function
+
+
     #[tauri::command]
-    async fn transform_text(app_handle: tauri::AppHandle, request: TransformRequest) -> Result<String, String> {
-        // Get API key automatically instead of passing it from frontend
-        let api_key = get_openai_api_key(&app_handle)?;
-        
-        let prompt = format!("Transform the following text using the style: {}\n\n{}", request.transformation, request.text);
-        let openai_req = OpenAIRequest {
-            model: "gpt-3.5-turbo".to_string(),
-            messages: vec![
-            OpenAIMessage {
-                role: "user".to_string(),
-                content: prompt,
-            },
-            ],
+    async fn transform_text(
+        app_handle: tauri::AppHandle,
+        request: TransformRequest,
+        provider_type: Option<String>, // e.g. "OpenAI", "LMStudio", "Ollama"
+        model_name: Option<String>,
+    ) -> Result<String, String> {
+        // Choose provider type (default to OpenAI)
+        let provider_type = match provider_type.as_deref() {
+            Some("LMStudio") => ProviderType::LMStudio,
+            Some("Ollama") => ProviderType::Ollama,
+            _ => ProviderType::OpenAI,
         };
-        
-        let client = reqwest::Client::new();
-        let res = client
-        .post("https://api.openai.com/v1/chat/completions")
-        .header(AUTHORIZATION, format!("Bearer {}", api_key))
-        .header(CONTENT_TYPE, "application/json")
-        .json(&openai_req)
-        .send()
-        .await
-        .map_err(|e| e.to_string())?;
-        
-        let json: serde_json::Value = res.json().await.map_err(|e| e.to_string())?;
-        let output = json["choices"][0]["message"]["content"].as_str().unwrap_or("").to_string();
+
+        // Get provider config (API key or URL)
+        let config = match provider_type {
+            ProviderType::OpenAI => crate::get_openai_api_key(&app_handle)?,
+            ProviderType::LMStudio => "http://localhost:1234/v1/".to_string(), // Or load from settings
+            ProviderType::Ollama => "http://localhost:11434".to_string(),      // Or load from settings
+        };
+
+        // Create provider
+        let mut provider = create_provider(provider_type, &config);
+
+        // Set preferred model if provided
+        if let Some(model_name_str) = &model_name {
+            provider.set_preferred_inference_model(model_name_str.clone()).ok();
+        }
+
+        // Build the request
+        let prompt = format!(
+            "Transform the following text using the style: {}\n\n{}",
+            request.transformation, request.text
+        );
+        let chat_request = ChatCompletionRequest {
+            messages: vec![ChatMessage {
+                role: MessageRole::User,
+                content: prompt,
+                name: None,
+            }],
+            model: model_name.clone().unwrap_or_else(|| "gpt-4.0-nano".to_string()),
+            temperature: Some(0.7),
+            max_tokens: Some(1024),
+            stream: false,
+        };
+
+        // Call the provider
+        let response = provider.create_chat_completion(&chat_request).await
+            .map_err(|e| format!("LLM error: {}", e))?;
+
+        // Return the first choice's content
+        let output = response.choices.get(0)
+            .map(|c| c.message.content.clone())
+            .unwrap_or_default();
+
         Ok(output)
     }
     

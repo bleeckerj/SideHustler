@@ -4466,6 +4466,7 @@ name = "sidehustler"
 version = "0.1.0"
 dependencies = [
  "async-openai",
+ "async-trait",
  "chrono",
  "dotenv",
  "env_logger",
@@ -4486,7 +4487,10 @@ dependencies = [
  "tauri-plugin-dialog",
  "tauri-plugin-log",
  "tauri-plugin-opener",
+ "thiserror 2.0.12",
  "tokio",
+ "url",
+ "uuid",
 ]
 
 [[package]]
