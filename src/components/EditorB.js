@@ -3,9 +3,9 @@ import StarterKit from '@tiptap/starter-kit';
 import { invoke } from "@tauri-apps/api/core";
 import { logToConsole } from './Console.js';
 
-let editorB = null;
+let editorBInstance = null;
 
-export function mountEditorB(element) {
+export function mountEditorB(container) {
   // Create editor container
   const editorContainer = document.createElement('div');
   editorContainer.className = 'editor-container';
@@ -32,10 +32,10 @@ export function mountEditorB(element) {
   // Append elements
   editorContainer.appendChild(title);
   editorContainer.appendChild(contentArea);
-  element.appendChild(editorContainer);
+  container.appendChild(editorContainer);
   
   // Initialize Tiptap editor (read-only for output)
-  editorB = new Editor({
+  editorBInstance = new Editor({
     element: contentArea,
     extensions: [
       StarterKit,
@@ -46,13 +46,13 @@ export function mountEditorB(element) {
   
   logToConsole('info', 'Editor B (output) initialized');
   
-  return editorB;
+  return editorBInstance;
 }
 
 // Method to update the content of EditorB with transformed text
 export function updateEditorB(content) {
-  if (editorB) {
-    editorB.commands.setContent(content);
+  if (editorBInstance) {
+    editorBInstance.commands.setContent(content);
     logToConsole('info', 'Output editor updated with transformed text');
   } else {
     logToConsole('error', 'Cannot update Editor B - not initialized');
@@ -61,5 +61,10 @@ export function updateEditorB(content) {
 
 // Method to get the content from EditorB
 export function getEditorBContent() {
-  return editorB ? editorB.getHTML() : '';
+  return editorBInstance ? editorBInstance.getHTML() : '';
+}
+
+// Method to get the editor instance of EditorB
+export function getEditorBInstance() {
+  return editorBInstance;
 }

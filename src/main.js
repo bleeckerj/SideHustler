@@ -1,3 +1,5 @@
+import { mountEditorA, getEditorAText, getEditorAInstance } from './components/EditorA.js';
+import { setupActionButtonHandlers } from './components/button-handlers.js';
 document.body.style.margin = '0';
 document.body.style.padding = '0';
 document.body.style.overflow = 'hidden';
@@ -122,10 +124,10 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
-import { mountEditorA } from './components/EditorA.js'
-import { mountEditorB } from './components/EditorB.js'
+import { mountEditorB, getEditorBInstance } from './components/EditorB.js'
 import { mountConsole, logToConsole } from './components/Console.js'
 import { listen } from '@tauri-apps/api/event'
+// import { invoke } from '@tauri-apps/api/tauri';
 const { invoke } = window.__TAURI__.core;
 
 let unlistenConsoleMessage;
@@ -204,6 +206,7 @@ mountEditorA(leftPane);
 mountEditorB(rightPane);
 mountConsole(consoleContainer);
 
+const editorB = getEditorBInstance();
 // Add resize functionality to vertical handle
 verticalResizeHandle.addEventListener('mousedown', (mouseDownEvent) => {
   mouseDownEvent.preventDefault();
@@ -359,6 +362,7 @@ statusBar.textContent = 'Ready.';
 // Add status bar to the bottom of the app
 app.appendChild(statusBar);
 
+
 // Facility for sending text messages to the status bar
 window.setStatusBarMessage = function(msg) {
   statusBar.textContent = msg;
@@ -410,7 +414,7 @@ const row1Buttons = [
   {id:'vibe-mode-btn',label:'VIBEM',enabled:true},
   {id:'streaming-mode-btn',label:'STRMC',enabled:true},
   {id:'nudge-inline-action-item',label:'NUDGE',enabled:true},
-  {id:'simplify-btn',label:'SMLFY',enabled:false},
+  {id:'simplify-btn',label:'SMLFY',enabled:true},
   {id:'panel-toggle-btn',label:'PREFS',enabled:true},
   {id:'arm-a-btn',label:'ARM-A',enabled:false},
   {id:'arm-b-btn',label:'ARM-B',enabled:false},
@@ -437,6 +441,12 @@ actionButtonsArea.appendChild(row2);
 
 // Insert action buttons area before the consoleContainer
 app.insertBefore(actionButtonsArea, consoleContainer);
+//console.log("*************************")
+// Now set up button handlers
+
+// console.log(getEditorBInstance());
+// console.log(editorB.getText());
+setupActionButtonHandlers(getEditorAText, editorB);
 
 try {
     unlistenConsoleMessage = await listen('console-message', (event) => {
@@ -458,3 +468,34 @@ window.addEventListener('keydown', async (event) => {
         await invoke('greet', { name: 'World' });
     }
 });
+
+async function runTransformation() {
+  // Get text from EditorA (assuming you have a reference to the Tiptap editor instance)
+  const editorAText = editorA.getText(); // Or use .getHTML() if you want HTML
+
+  // Get the selected transformation type (e.g., from a button or dropdown)
+  const transformation = getSelectedTransformation(); // Implement this as needed
+
+  // Optionally, get provider/model from UI
+  const providerType = getSelectedProviderType(); // e.g. "OpenAI"
+  const modelName = getSelectedModelName(); // e.g. "gpt-3.5-turbo"
+
+  // Call the Rust backend
+  try {
+    const result = await invoke('transform_text', {
+      appHandle: null, // Tauri injects this automatically
+      request: {
+        text: "This is the input text to transform:\n\n"+editorAText,
+        transformation: transformation,
+      },
+      providerType: providerType,
+      modelName: modelName,
+    });
+
+    // Set the result in EditorB
+    editorB.commands.setContent(result); // Or .setText(result) if plain text
+    window.setStatusBarMessage('Transformation complete.');
+  } catch (err) {
+    window.setStatusBarMessage('Transformation failed: ' + err);
+  }
+}

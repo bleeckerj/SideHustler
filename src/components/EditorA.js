@@ -4,7 +4,7 @@ import { logToConsole } from './Console.js'
 import Underline from '@tiptap/extension-underline'
 import { updateEditorB } from './EditorB.js' // Import the function to update EditorB
 
-let editorA = null;
+let editorAInstance = null;
 
 // Add a flag to track if the initial text has been cleared
 let initialTextCleared = false;
@@ -60,7 +60,7 @@ export function mountEditorA(element) {
   element.appendChild(editorContainer);
   
   // Initialize Tiptap editor with additional extensions
-  editorA = new Editor({
+  editorAInstance = new Editor({
     element: contentArea,
     extensions: [
       StarterKit,
@@ -93,14 +93,14 @@ export function mountEditorA(element) {
         setTimeout(() => {
           if (event.key === 'Enter') {
             // Handle Enter key specially
-            editorA.commands.setContent('<p></p>');
+            editorAInstance.commands.setContent('<p></p>');
           } else {
             // For normal characters, add them to the document
-            editorA.commands.setContent(`<p>${event.key}</p>`);
+            editorAInstance.commands.setContent(`<p>${event.key}</p>`);
           }
           
           // Position cursor after the inserted character
-          editorA.commands.focus('end');
+          editorAInstance.commands.focus('end');
           
           // Clear EditorB when EditorA's initial text is cleared
           try {
@@ -131,9 +131,9 @@ export function mountEditorA(element) {
       // Handle command execution safely
       try {
         if (btn.args) {
-          editorA.chain().focus()[btn.command](btn.args).run();
+          editorAInstance.chain().focus()[btn.command](btn.args).run();
         } else {
-          editorA.chain().focus()[btn.command]().run();
+          editorAInstance.chain().focus()[btn.command]().run();
         }
       } catch (error) {
         logToConsole('error', `Command error: ${btn.command} - ${error.message}`);
@@ -151,25 +151,34 @@ export function mountEditorA(element) {
     console.error('Error logging to console component:', e);
   }
   
-  return editorA;
+  return editorAInstance;
 }
 
 // Method to get the content from EditorA
 export function getEditorAContent() {
-  return editorA ? editorA.getHTML() : '';
+  return editorAInstance ? editorAInstance.getHTML() : '';
 }
 
 // Method to set the content of EditorA
 export function setEditorAContent(content) {
-  if (editorA) {
-    editorA.commands.setContent(content);
+  if (editorAInstance) {
+    editorAInstance.commands.setContent(content);
   }
 }
 
 // Add a method to reset the initial text state if needed (e.g., when creating a new document)
 export function resetEditorAInitialState() {
   initialTextCleared = false;
-  if (editorA) {
-    editorA.commands.setContent('<p>Type or paste your text here to transform...</p>');
+  if (editorAInstance) {
+    editorAInstance.commands.setContent('<p>Type or paste your text here to transform...</p>');
   }
+}
+
+// Method to get plain text from EditorA
+export function getEditorAText() {
+  return editorAInstance ? editorAInstance.getText() : '';
+}
+
+export function getEditorAInstance() {
+  return editorAInstance;
 }
