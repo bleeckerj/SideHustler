@@ -66,7 +66,7 @@ export function mountEditorA(element) {
       StarterKit,
       Underline,
     ],
-    content: '<p>Tap or paste your text here to transform...</p>',
+    content: '<p>Tap or paste your text here to transform</p>',
     editable: true,
   });
   
@@ -82,7 +82,7 @@ export function mountEditorA(element) {
     // Only clear initial text on first keydown if it hasn't been cleared yet
     if (!initialTextCleared) {
       // Only process actual text input (not modifier keys, etc.)
-      if (event.key.length === 1 || event.key === 'Enter') {
+      if (event.key.length === 1 || event.key === 'Escape' || event.key === 'Enter' || event.key === 'Backspace') {
         console.log('Clearing initial text and inserting typed character');
         initialTextCleared = true;
         

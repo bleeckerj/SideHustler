@@ -4,10 +4,11 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
+    "dev": "vite dev",
+    "build": "vite build",
     "preview": "vite preview",
-    "tauri:dev": "RUST_LOG=debug tauri dev"
+    "tauri:dev": "RUST_LOG=debug tauri dev",
+    "tauri:build": "RUST_LOG=debug tauri build"
   },
   "dependencies": {
     "@tailwindcss/postcss": "^4.0.3",

@@ -2,17 +2,63 @@ const { invoke } = window.__TAURI__.core;
 import yaml from 'js-yaml';
 import { logToConsole } from './Console.js';
 
+/**
+ * Formats JSON output from the LLM for display in EditorB.
+ * Handles both array of objects and single object responses.
+ * Converts \\n to <br> for line breaks, and structures output for easy copying.
+ */
+function formatJsonForEditorB(json) {
+  // If it's an array, format each object
+  if (Array.isArray(json)) {
+    return json.map(obj => formatSingleJsonObject(obj)).join('<hr>');
+  }
+  // If it's a single object, format it
+  if (typeof json === 'object' && json !== null) {
+    return formatSingleJsonObject(json);
+  }
+  // Fallback: return as plain text
+  return String(json);
+}
+
+/**
+ * Formats a single JSON object for display.
+ * Handles keys: headline, transformed, seo, essay, social, linkedin.
+ */
+function formatSingleJsonObject(obj) {
+  let html = '';
+  if (obj.headline) {
+    html += `<div style="font-weight:bold; margin-bottom:4px;">${obj.headline}</div>`;
+  }
+  if (obj.transformed) {
+    html += `<div style="margin-bottom:8px;">${obj.transformed.replace(/\\n/g, '<br>')}</div>`;
+  }
+  // For multi-format objects (post prompt)
+  ['seo', 'essay', 'social', 'linkedin'].forEach(key => {
+    if (obj[key]) {
+      html += `<div style="margin-bottom:6px;"><span style="font-weight:bold;">${key.toUpperCase()}:</span><br>${obj[key].replace(/\\n/g, '<br>')}</div>`;
+    }
+  });
+  return html;
+}
+
 export function setupActionButtonHandlers(getEditorAText, editorB) {
-  // Example for one button:
-  console.log('Setting up action button handlers');
-  console.log(document.getElementById('incant-btn'));
+  // Helper to set EditorB content, handling JSON formatting
+  function setEditorBContent(result) {
+    let formatted = result;
+    try {
+      const parsed = JSON.parse(result);
+      formatted = formatJsonForEditorB(parsed);
+    } catch (e) {
+      // Not JSON, use as plain text
+      formatted = result;
+    }
+    editorB.commands.setContent(formatted);
+  }
+
   document.getElementById('incant-btn').onclick = async () => {
     setStatusBarMessage('Running INCNT transformation...');
     const text = getEditorAText();
 
-    // Example: system prompt for "INCNT" transformation
-    const systemPrompt = "You are a helpful assistant. Transform the user's text as requested and return the result as a JSON object: { \"transformed\": \"...\" }";
-        
     const response = await fetch('/prompts.yaml');
     const full_text = await response.text();
     const prompts = yaml.load(full_text);
@@ -24,10 +70,9 @@ export function setupActionButtonHandlers(getEditorAText, editorB) {
         request: { text },
         providerType: 'OpenAI',
         modelName: 'gpt-4.1-nano-2025-04-14',
-        systemPrompt: montaigneSystemPrompt, // <-- Pass system prompt correctly
+        systemPrompt: montaigneSystemPrompt,
       });
-      debugger;
-      editorB.commands.setContent(result); // Now editorB is available
+      setEditorBContent(result);
       setStatusBarMessage('Transformation complete.');
     } catch (err) {
       setStatusBarMessage('Transformation failed: ' + err);
@@ -40,9 +85,6 @@ export function setupActionButtonHandlers(getEditorAText, editorB) {
     setStatusBarMessage('Running Simplify transformation...');
     const text = getEditorAText();
 
-    // Example: system prompt for "Simplify" transformation
-    //const systemPrompt = "You are a helpful assistant. Simplify the user's text and return the result as a JSON object: { \"simplified\": \"...\" }";
-    
     const response = await fetch('/prompts.yaml');
     const full_text = await response.text();
     const prompts = yaml.load(full_text);
@@ -55,17 +97,39 @@ export function setupActionButtonHandlers(getEditorAText, editorB) {
         request: { text },
         providerType: 'OpenAI',
         modelName: 'gpt-4.1-nano-2025-04-14',
-        systemPrompt, 
+        systemPrompt,
       });
-      editorB.commands.setContent(result); // Now editorB is available
+      setEditorBContent(result);
       setStatusBarMessage('Simplification complete.');
     } catch (err) {
       setStatusBarMessage('Simplification failed: ' + err);
       console.error('Simplification error:', err);
       logToConsole('error', `Simplification error: ${err.message}`);
     }
-  }
+  };
 
+  document.getElementById('blog-post-btn').onclick = async () => {
+    setStatusBarMessage('Blog post transform.');
+    const text = getEditorAText();
+    const response = await fetch('/prompts.yaml');
+    const full_text = await response.text();
+    const prompts = yaml.load(full_text);
+
+    try {
+      const result = await invoke('transform_text', {
+        request: { text },
+        providerType: 'OpenAI',
+        modelName: 'gpt-4.1-nano-2025-04-14',
+        systemPrompt: prompts.post,
+      });
+      setEditorBContent(result);
+      setStatusBarMessage('Blog post transformation complete.');
+    } catch (err) {
+      setStatusBarMessage('Blog post transformation failed: ' + err);
+      console.error('Blog post transformation error:', err);
+      logToConsole('error', `Blog post transformation error: ${err.message}`);
+    }
+  };
 }
 
 function fillNamedPrompt(template, values) {

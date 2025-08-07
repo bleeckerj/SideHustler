@@ -410,8 +410,8 @@ function createButtonRow(buttons) {
 }
 
 const row1Buttons = [
-  {id:'incant-btn',label:'INCNT',enabled:true},
-  {id:'vibe-mode-btn',label:'VIBEM',enabled:true},
+  {id:'incant-btn',label:'MONTG',enabled:true},
+  {id:'blog-post-btn',label:'BPOST',enabled:true},
   {id:'streaming-mode-btn',label:'STRMC',enabled:true},
   {id:'nudge-inline-action-item',label:'NUDGE',enabled:true},
   {id:'simplify-btn',label:'SMLFY',enabled:true},
@@ -448,19 +448,25 @@ app.insertBefore(actionButtonsArea, consoleContainer);
 // console.log(editorB.getText());
 setupActionButtonHandlers(getEditorAText, editorB);
 
-try {
+async function main() {
+  // ... your setup code ...
+
+  try {
     unlistenConsoleMessage = await listen('console-message', (event) => {
-        console.log(`Received console message: ${JSON.stringify(event)}`);
-        const { level, message } = event.payload;
-        logToConsole(level, message);
-    }).then(() => {
-        console.log("Event listener for 'console-message' registered successfully");
-    }).catch(err => {
-        console.error("Failed to register event listener:", err);
+      console.log(`Received console message: ${JSON.stringify(event)}`);
+      const { level, message } = event.payload;
+      logToConsole(level, message);
     });
-} catch (error) {
+    console.log("Event listener for 'console-message' registered successfully");
+  } catch (error) {
     console.error("Error setting up event listeners:", error);
+  }
+
+  // ... any other async code ...
 }
+
+// Call the main function to start your app
+main();
 
 window.addEventListener('keydown', async (event) => {
     if (event.key === 'Escape') {
